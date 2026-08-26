@@ -707,35 +707,83 @@ function panelRANK() {
   wrap.appendChild(body);
 
   var b2 = el('section',{class:'blk'});
-  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('4사 동시 비교')]), el('span',{class:'blk-note'},[txt('39주 실측 · 검은사막 7/20 이후 결측')])]));
-  var comboCard = el('div',{class:'chart-card'});
-  comboCard.appendChild(el('div',{class:'legend'},[
-    el('span',{class:'li'},[el('span',{class:'sw dot-fill-self'},[]),txt('메이플M')]),
-    el('span',{class:'li'},[el('span',{class:'sw dot-fill-bdo'},[]),txt('검은사막M')]),
-    el('span',{class:'li'},[el('span',{class:'sw dot-fill-ion2'},[]),txt('아이온2')]),
-    el('span',{class:'li'},[el('span',{class:'sw dot-fill-mabi'},[]),txt('마비노기M')])
-  ]));
-  var comboChartWrap = el('div',{class:'chart-wrap'});
-  comboCard.appendChild(comboChartWrap);
-  comboCard.appendChild(el('div',{class:'chart-note', style:'margin-top:8px;'},[txt('6/8주차: 4사 전부 동반 하락(자체 대형 업데이트 직전 공백기) · 7/6~8/3: 4사 대형 이벤트가 실제로 겹친 구간')]));
-  b2.appendChild(comboCard);
+  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('4사 동시 비교')]), el('span',{class:'blk-note'},[txt('39주 실측 · 독립 필터')])]));
+
+  var comboFilterRow = el('div',{class:'filter-row'});
+  var comboMetricSeg = el('div',{class:'seg'});
+  ['game','user'].forEach(function(m){
+    var btn = el('button',{'data-cgroup':'metric','data-cval':m},[txt(m==='game'?'게임(매출)순위':'이용자수순위')]);
+    if (m===comboState.metric) btn.classList.add('active');
+    btn.addEventListener('click', function(){ comboState.metric = m; syncComboButtons(); renderComboBody(); });
+    comboMetricSeg.appendChild(btn);
+  });
+  comboFilterRow.appendChild(comboMetricSeg);
+  var comboPeriodSeg = el('div',{class:'seg'});
+  [['all','전체 39주'],['recent','최근 12주']].forEach(function(p){
+    var btn = el('button',{'data-cgroup':'period','data-cval':p[0]},[txt(p[1])]);
+    if (p[0]===comboState.period) btn.classList.add('active');
+    btn.addEventListener('click', function(){ comboState.period = p[0]; syncComboButtons(); renderComboBody(); });
+    comboPeriodSeg.appendChild(btn);
+  });
+  comboFilterRow.appendChild(comboPeriodSeg);
+  b2.appendChild(comboFilterRow);
+
+  var comboBody = el('div',{id:'comboBody'});
+  b2.appendChild(comboBody);
   wrap.appendChild(b2);
 
   setTimeout(function(){
     renderRANKBody();
-    renderRankChart(comboChartWrap, {
-      weeks: WEEKS,
-      imputedFrom: BDO_IMPUTED_FROM,
-      series: [
-        {data:RANK.maple_game, cls:'self', label:'메이플M'},
-        {data:RANK.bdo_game, cls:'bdo', label:'검은사막M'},
-        {data:RANK.ion2_game, cls:'ion2', label:'아이온2'},
-        {data:RANK.mabi_game, cls:'mabi', label:'마비노기M'}
-      ]
-    });
+    renderComboBody();
   }, 0);
 
   return wrap;
+}
+
+var comboState = { metric:'game', period:'all' };
+function syncComboButtons(){
+  document.querySelectorAll('.seg button[data-cgroup]').forEach(function(b){
+    var group = b.getAttribute('data-cgroup');
+    var current = group==='metric' ? comboState.metric : comboState.period;
+    b.classList.toggle('active', b.getAttribute('data-cval') === current);
+  });
+}
+function renderComboBody(){
+  var host = document.getElementById('comboBody');
+  if (!host) return;
+  host.innerHTML = '';
+  var metric = comboState.metric;
+  var mapleArr = metric==='game' ? RANK.maple_game : RANK.maple_user;
+  var bdoArr   = metric==='game' ? RANK.bdo_game   : RANK.bdo_user;   // 검은사막 유저순위는 결측 많아 데이터 없음
+  var ion2Arr  = metric==='game' ? RANK.ion2_game  : RANK.ion2_user;
+  var mabiArr  = metric==='game' ? RANK.mabi_game  : RANK.mabi_user;
+
+  var series = [{data:mapleArr, cls:'self', label:'메이플M'}];
+  if (bdoArr) series.push({data:bdoArr, cls:'bdo', label:'검은사막M'});
+  series.push({data:ion2Arr, cls:'ion2', label:'아이온2'});
+  series.push({data:mabiArr, cls:'mabi', label:'마비노기M'});
+
+  var card = el('div',{class:'chart-card'});
+  var legend = el('div',{class:'legend'});
+  series.forEach(function(s){ legend.appendChild(el('span',{class:'li'},[el('span',{class:'sw dot-fill-'+s.cls},[]),txt(s.label)])); });
+  card.appendChild(legend);
+  var chartWrap = el('div',{class:'chart-wrap'});
+  card.appendChild(chartWrap);
+  var noteTxt = metric==='game'
+    ? '6/8주차: 4사 전부 동반 하락(자체 대형 업데이트 직전 공백기) · 7/6~8/3: 4사 대형 이벤트가 실제로 겹친 구간 · 검은사막 7/20 이후 결측(200위 대체)'
+    : '검은사막 모바일은 이용자수 데이터 결측이 많아(39주 중 34주 결측) 이 뷰에서 제외했습니다.';
+  card.appendChild(el('div',{class:'chart-note', style:'margin-top:8px;'},[txt(noteTxt)]));
+  host.appendChild(card);
+
+  var weeks = WEEKS;
+  var chartSeries = series.map(function(s){ return {data:s.data, cls:s.cls, label:s.label}; });
+  var impFrom = metric==='game' ? BDO_IMPUTED_FROM : null;
+  if (comboState.period==='recent') {
+    weeks = WEEKS.slice(-12);
+    chartSeries = chartSeries.map(function(s){ return {data:s.data.slice(-12), cls:s.cls, label:s.label}; });
+    if (impFrom!=null) impFrom = Math.max(0, impFrom-(WEEKS.length-12));
+  }
+  setTimeout(function(){ renderRankChart(chartWrap, { weeks:weeks, imputedFrom:impFrom, series:chartSeries }); }, 0);
 }
 
 function syncFilterButtons(){
