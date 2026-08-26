@@ -1,0 +1,1211 @@
+<title>메이플M 벤치마킹 대시보드</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+  :root {
+    color-scheme: light;
+    --paper:        #f2f3ee;
+    --surface:      #ffffff;
+    --surface-2:    #fbfbf7;
+    --surface-tint: #eceade;
+    --ink:          #1a1c17;
+    --ink-2:        #57584e;
+    --ink-3:        #8b8c80;
+    --line:         #e0ddd0;
+    --line-strong:  #c9c6b6;
+    --accent:       #a3701c;
+    --accent-soft:  #f1e3c4;
+    --good:         #0ca30c;
+    --warning:      #b8790a;
+    --critical:     #d03b3b;
+    --neutral:      #8b8c80;
+    --self:         #1a1c17;
+    --comp-bdo:     #2a78d6;
+    --comp-ion2:    #eb6834;
+    --comp-mabi:    #1baf7a;
+    --chart-surface:#fdfdfa;
+    --grid-line:    #e5e2d5;
+    --shadow: 0 1px 2px rgba(26,28,23,0.06), 0 8px 24px rgba(26,28,23,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --paper:        #15160f;
+      --surface:      #1d1f16;
+      --surface-2:    #23251a;
+      --surface-tint: #262819;
+      --ink:          #f2f1e7;
+      --ink-2:        #c4c3b4;
+      --ink-3:        #8f8f80;
+      --line:         #33341f;
+      --line-strong:  #45462b;
+      --accent:       #e0ac4c;
+      --accent-soft:  #3a2f14;
+      --good:         #0ca30c;
+      --warning:      #fab219;
+      --critical:     #e66767;
+      --neutral:      #8f8f80;
+      --self:         #f2f1e7;
+      --comp-bdo:     #3987e5;
+      --comp-ion2:    #d95926;
+      --comp-mabi:    #199e70;
+      --chart-surface:#1a1c13;
+      --grid-line:    #2c2e1e;
+      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 28px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --paper:        #15160f;
+    --surface:      #1d1f16;
+    --surface-2:    #23251a;
+    --surface-tint: #262819;
+    --ink:          #f2f1e7;
+    --ink-2:        #c4c3b4;
+    --ink-3:        #8f8f80;
+    --line:         #33341f;
+    --line-strong:  #45462b;
+    --accent:       #e0ac4c;
+    --accent-soft:  #3a2f14;
+    --good:         #0ca30c;
+    --warning:      #fab219;
+    --critical:     #e66767;
+    --neutral:      #8f8f80;
+    --self:         #f2f1e7;
+    --comp-bdo:     #3987e5;
+    --comp-ion2:    #d95926;
+    --comp-mabi:    #199e70;
+    --chart-surface:#1a1c13;
+    --grid-line:    #2c2e1e;
+    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 28px rgba(0,0,0,0.4);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    font-size: 14.5px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  h1,h2,h3,h4 { font-family: "IBM Plex Sans Condensed","IBM Plex Sans",sans-serif; margin: 0; text-wrap: balance; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  button { font: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .app { max-width: 1360px; margin: 0 auto; padding: 0 22px 64px; }
+
+  /* ---- Topbar ---- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    background: var(--paper);
+    padding: 18px 0 0;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 26px;
+  }
+  .topbar-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding-bottom: 14px; }
+  .brand { display: flex; align-items: baseline; gap: 9px; }
+  .brand-mark { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; color: var(--accent); }
+  .brand-sub { font-size: 17px; font-weight: 700; }
+  .meta-pill { font-family: "IBM Plex Mono", monospace; font-size: 11.5px; color: var(--ink-3); background: var(--surface-tint); padding: 5px 11px; border-radius: 20px; white-space: nowrap; }
+
+  .tabs { display: flex; gap: 2px; margin-bottom: -1px; flex-wrap: wrap; }
+  .tab-btn {
+    border: none; background: transparent; color: var(--ink-2); cursor: pointer;
+    padding: 10px 16px; font-size: 13.5px; font-weight: 600; border-radius: 8px 8px 0 0;
+    border-bottom: 2px solid transparent; transition: color .15s, background .15s;
+  }
+  .tab-btn:hover { color: var(--ink); background: var(--surface-tint); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-code { font-family: "IBM Plex Mono", monospace; font-size: 10px; opacity: .65; margin-right: 6px; }
+
+  .panel { display: none; }
+  .panel.active { display: block; animation: fadein .15s ease; }
+  @keyframes fadein { from { opacity: 0; } to { opacity: 1; } }
+
+  section.blk { margin-bottom: 40px; }
+  .blk-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+  .blk-head h3 { font-size: 18px; font-weight: 700; }
+  .blk-note { font-size: 12px; color: var(--ink-3); }
+
+  /* ---- Grids / cards ---- */
+  .grid { display: grid; gap: 14px; }
+  .grid-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 980px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: repeat(2,1fr); } }
+  @media (max-width: 640px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 18px; box-shadow: var(--shadow); }
+  .card h4 { font-size: 14.5px; font-weight: 700; margin-bottom: 6px; }
+  .card p { margin: 0; font-size: 13px; color: var(--ink-2); }
+
+  /* ---- KPI tiles ---- */
+  .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .kpi .v { font-family: "IBM Plex Mono", monospace; font-size: 26px; font-weight: 500; }
+  .kpi .l { font-size: 12.5px; color: var(--ink-2); margin-top: 3px; }
+  .kpi .d { font-family: "IBM Plex Mono", monospace; font-size: 12px; margin-top: 8px; color: var(--good); display: inline-flex; align-items: center; gap: 3px; }
+
+  /* ---- Chips / pills ---- */
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; padding: 3px 9px; border-radius: 20px; border: 1px solid var(--line-strong); color: var(--ink-2); white-space: nowrap; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex: none; }
+  .dot.good { background: var(--good); } .dot.warning { background: var(--warning); } .dot.critical { background: var(--critical); } .dot.neutral { background: var(--neutral); }
+  .dot.self { background: var(--self); } .dot.bdo { background: var(--comp-bdo); } .dot.ion2 { background: var(--comp-ion2); } .dot.mabi { background: var(--comp-mabi); }
+
+  .filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+  .seg { display: inline-flex; background: var(--surface-tint); border-radius: 9px; padding: 3px; gap: 2px; }
+  .seg button { border: none; background: transparent; padding: 7px 13px; border-radius: 7px; font-size: 12.5px; font-weight: 600; color: var(--ink-2); cursor: pointer; }
+  .seg button.active { background: var(--surface); color: var(--ink); box-shadow: var(--shadow); }
+
+  /* ---- Tables ---- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 12.8px; min-width: 560px; }
+  thead th { text-align: left; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-3); font-weight: 500; padding: 10px 13px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  tbody td { padding: 10px 13px; border-bottom: 1px solid var(--line); vertical-align: top; color: var(--ink-2); }
+  tbody tr:last-child td { border-bottom: none; }
+  td.strong { color: var(--ink); font-weight: 600; }
+  td.num, th.num { font-family: "IBM Plex Mono", monospace; text-align: right; }
+
+  /* ---- Chart chrome ---- */
+  .chart-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px 20px 14px; box-shadow: var(--shadow); }
+  .chart-card .chart-head { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 8px; margin-bottom: 4px; }
+  .chart-card h4 { font-size: 14px; font-weight: 700; }
+  .chart-note { font-size: 11.5px; color: var(--ink-3); }
+  .legend { display: flex; gap: 16px; margin: 10px 2px 6px; font-size: 12px; flex-wrap: wrap; }
+  .legend .li { display: flex; align-items: center; gap: 6px; color: var(--ink-2); }
+  .legend .sw { width: 14px; height: 3px; border-radius: 2px; }
+  .chart-wrap { position: relative; }
+  svg.chart { width: 100%; height: auto; display: block; overflow: visible; }
+  .tooltip { position: absolute; pointer-events: none; opacity: 0; transition: opacity .1s; background: var(--ink); color: var(--paper); font-family: "IBM Plex Mono", monospace; font-size: 11px; padding: 8px 10px; border-radius: 7px; white-space: nowrap; transform: translate(-50%, -112%); box-shadow: var(--shadow); z-index: 6; }
+  :root[data-theme="dark"] .tooltip { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line-strong); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .tooltip { background: var(--surface-2); color: var(--ink); border: 1px solid var(--line-strong); } }
+  .tooltip .tt-h { color: var(--ink-3); margin-bottom: 4px; }
+  :root[data-theme="dark"] .tooltip .tt-h { color: var(--ink-3); }
+  .tooltip .tt-row { display: flex; align-items: center; gap: 7px; }
+
+  /* ---- Hooking matrix ---- */
+  .hmatrix { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .hmatrix table { min-width: 640px; }
+  .hcell-yes { color: var(--good); font-weight: 600; }
+  .hcell-no { color: var(--ink-3); }
+
+  /* ---- Case study ---- */
+  .case-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
+  .case-card .case-tag { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--accent); letter-spacing: .06em; }
+  .case-card h4 { font-size: 15px; margin: 5px 0 10px; }
+  .case-stat-row { display: flex; gap: 18px; margin: 12px 0 10px; flex-wrap: wrap; }
+  .case-stat { }
+  .case-stat .cv { font-family: "IBM Plex Mono", monospace; font-size: 21px; font-weight: 500; }
+  .case-stat .cl { font-size: 11.5px; color: var(--ink-2); }
+  .bar-compare { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .bar-row { display: grid; grid-template-columns: 96px 1fr 56px; align-items: center; gap: 8px; font-size: 12px; }
+  .bar-track { height: 10px; background: var(--surface-tint); border-radius: 6px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; }
+
+  /* ---- SIM tab ---- */
+  .sim-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 18px; align-items: start; }
+  @media (max-width: 980px) { .sim-grid { grid-template-columns: 1fr; } }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+  .field label { font-size: 12px; color: var(--ink-2); font-weight: 600; }
+  .field input, .field select { font: inherit; font-size: 13px; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--ink); }
+  .field-row { display: flex; gap: 10px; }
+  .field-row .field { flex: 1; }
+  .btn { border: none; background: var(--accent); color: var(--surface); padding: 10px 18px; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; }
+  .btn.secondary { background: var(--surface-tint); color: var(--ink); }
+  .btn-row { display: flex; gap: 8px; margin-top: 4px; }
+
+  .pressure-result { border-radius: 12px; padding: 20px; text-align: center; border: 1px solid var(--line); }
+  .pressure-result .grade { font-family: "IBM Plex Mono", monospace; font-size: 34px; font-weight: 600; }
+  .pressure-result .desc { font-size: 12.5px; color: var(--ink-2); margin-top: 6px; }
+  .pressure-result.low { background: color-mix(in srgb, var(--good) 10%, var(--surface)); }
+  .pressure-result.mid { background: color-mix(in srgb, var(--warning) 12%, var(--surface)); }
+  .pressure-result.high { background: color-mix(in srgb, var(--critical) 12%, var(--surface)); }
+  .pressure-result.low .grade { color: var(--good); }
+  .pressure-result.mid .grade { color: var(--warning); }
+  .pressure-result.high .grade { color: var(--critical); }
+  .guide-row { display: flex; flex-direction: column; gap: 6px; margin-top: 14px; font-size: 12px; text-align: left; }
+  .guide-row .g-item { display: flex; gap: 8px; padding: 8px 10px; border-radius: 8px; background: var(--surface-tint); }
+  .overlap-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; }
+  .overlap-list li { display: flex; justify-content: space-between; gap: 8px; padding: 7px 10px; background: var(--surface-tint); border-radius: 7px; }
+  .cal-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; max-height: 300px; overflow-y: auto; }
+  .cal-item { display: grid; grid-template-columns: 88px 60px 1fr auto; gap: 8px; align-items: center; padding: 8px 10px; border-radius: 8px; font-size: 12px; background: var(--surface-2); }
+  .cal-item .scale { font-family: "IBM Plex Mono", monospace; font-size: 10px; padding: 2px 6px; border-radius: 10px; }
+  .cal-item .scale.big { background: color-mix(in srgb, var(--critical) 18%, transparent); color: var(--critical); }
+  .cal-item .scale.mid { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
+  .cal-item .scale.small { background: var(--surface-tint); color: var(--ink-3); }
+  .cal-item button.rm { border: none; background: none; color: var(--ink-3); cursor: pointer; font-size: 15px; line-height: 1; padding: 2px 4px; }
+
+  /* ---- Priority matrix ---- */
+  .pmatrix { position: relative; aspect-ratio: 3 / 1; min-height: 220px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+  @media (max-width: 640px) { .pmatrix { aspect-ratio: 4 / 3; } }
+  .pmatrix .axis-x, .pmatrix .axis-y { position: absolute; font-family: "IBM Plex Mono", monospace; font-size: 10.5px; color: var(--ink-3); }
+  .pmatrix .axis-x { bottom: 6px; left: 50%; transform: translateX(-50%); }
+  .pmatrix .axis-y { left: 8px; top: 50%; transform: translateY(-50%) rotate(-90deg); transform-origin: left center; }
+  .pmatrix .quad-line-v { position: absolute; left: 50%; top: 4%; bottom: 4%; width: 1px; background: var(--line); }
+  .pmatrix .quad-line-h { position: absolute; top: 50%; left: 4%; right: 4%; height: 1px; background: var(--line); }
+  .pmatrix .pnode { position: absolute; transform: translate(-50%, -50%); width: 108px; text-align: center; }
+  .pmatrix .pnode .pdot { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); margin: 0 auto 6px; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line-strong); }
+  .pmatrix .pnode .plabel { font-size: 11.5px; font-weight: 600; line-height: 1.25; background: var(--surface); padding: 2px 6px; border-radius: 6px; }
+
+  /* ---- Roadmap ---- */
+  .roadmap { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--surface); }
+  .rm-row { display: grid; grid-template-columns: 130px 1fr; border-top: 1px solid var(--line); }
+  .rm-row:first-child { border-top: none; }
+  .rm-phase { padding: 15px 16px; background: var(--surface-tint); font-family: "IBM Plex Mono", monospace; font-size: 12px; display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+  .rm-phase .wk { color: var(--ink-3); font-size: 10.5px; }
+  .rm-body { padding: 15px 18px; font-size: 13px; color: var(--ink-2); }
+  .rm-body strong { color: var(--ink); }
+  @media (max-width: 640px) { .rm-row { grid-template-columns: 1fr; } }
+
+  .risk-log { display: grid; gap: 10px; }
+  .risk-item { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); align-items: start; }
+  .risk-item .sev { font-family: "IBM Plex Mono", monospace; font-size: 10px; text-transform: uppercase; padding: 3px 8px; border-radius: 5px; height: fit-content; }
+  .sev-h { background: color-mix(in srgb, var(--critical) 16%, transparent); color: var(--critical); }
+  .sev-m { background: color-mix(in srgb, var(--warning) 18%, transparent); color: var(--warning); }
+  .risk-item p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink-2); }
+  .risk-item strong { color: var(--ink); font-size: 13px; }
+
+  footer.appfoot { margin-top: 56px; padding-top: 18px; border-top: 1px solid var(--line); font-size: 11.5px; color: var(--ink-3); }
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="topbar-row">
+      <div class="brand"><span class="brand-mark">MAPLE M</span><span class="brand-sub">경쟁 벤치마킹 대시보드</span></div>
+      <div class="meta-pill">데이터 기준 2026 Q2 · 39주 실측 (11/17&ndash;8/10)</div>
+    </div>
+    <nav class="tabs" role="tablist" id="tabs">
+      <button class="tab-btn active" data-tab="exe" role="tab" aria-selected="true"><span class="tab-code">00</span>Executive Summary</button>
+      <button class="tab-btn" data-tab="rank" role="tab" aria-selected="false"><span class="tab-code">01</span>경쟁사 순위 추이</button>
+      <button class="tab-btn" data-tab="retn" role="tab" aria-selected="false"><span class="tab-code">02</span>리텐션 후킹 비교</button>
+      <button class="tab-btn" data-tab="sim" role="tab" aria-selected="false"><span class="tab-code">03</span>이벤트 압력 시뮬레이터</button>
+      <button class="tab-btn" data-tab="strat" role="tab" aria-selected="false"><span class="tab-code">04</span>실행전략 &amp; 로드맵</button>
+    </nav>
+  </header>
+
+  <main id="panels"></main>
+
+  <footer class="appfoot">메이플M 경쟁 벤치마킹 대시보드 &middot; 소스: 메이플스토리 M 벤치마킹 보고서.pptx (30슬라이드) &middot; 신뢰도 라벨: <span class="chip">VERIFIED-SELF/XLSX</span> <span class="chip">USER-DATALAB</span> <span class="chip">UNVERIFIED-EXT</span></footer>
+</div>
+
+<script>
+/* =================== DATA =================== */
+var WEEKS = ["11/17","11/24","12/1","12/8","12/15","12/22","12/29","1/5","1/12","1/19","1/26","2/2","2/9","2/16","2/23","3/2","3/9","3/16","3/23","3/30","4/6","4/13","4/20","4/27","5/4","5/11","5/18","5/25","6/1","6/8","6/15","6/22","6/29","7/6","7/13","7/20","7/27","8/3","8/10"];
+
+var RANK = {
+  maple_game: [71,68,64,60,44,22,34,41,37,38,53,62,58,39,49,63,71,74,78,85,87,76,79,82,80,82,85,85,80,88,86,91,98,83,89,87,34,21,29],
+  maple_user: [86,88,84,72,45,46,58,69,74,83,84,86,85,83,85,86,90,89,90,92,96,93,91,95,95,86,92,97,94,96,87,88,87,84,77,69,33,33,41],
+  bdo_game:   [144,131,144,198,131,131,136,129,130,133,160,144,133,132,143,112,85,114,135,133,139,140,159,157,155,219,198,138,168,201,198,226,182,204,159,200,200,200,200],
+  bdo_user:   null,
+  ion2_game:  [38,8,8,11,9,17,12,15,22,15,10,17,23,23,21,26,19,18,17,17,18,12,31,27,27,31,35,34,49,60,42,58,41,34,44,39,40,36,62],
+  ion2_user:  [6,12,20,21,27,26,30,31,36,36,41,44,45,45,41,43,47,49,51,57,59,62,66,70,75,78,84,87,92,92,98,106,79,76,80,77,86,105,101],
+  mabi_game:  [14,11,11,14,10,4,10,12,14,17,18,16,21,15,19,18,27,26,11,6,14,21,16,16,26,32,22,18,21,34,49,13,6,14,17,17,28,23,21],
+  mabi_user:  [15,13,14,15,15,18,17,17,18,24,23,23,18,21,20,22,23,23,20,20,22,24,27,26,33,39,34,42,51,36,36,22,23,31,35,39,55,56,51]
+};
+var BDO_IMPUTED_FROM = 35; // 검은사막 게임순위: 7/20 이후 결측 -> 200 대체값
+
+var COMPETITORS = {
+  bdo:  { label: '검은사막 모바일', cls: 'bdo',  hasUser: false },
+  ion2: { label: '아이온2',        cls: 'ion2', hasUser: true },
+  mabi: { label: '마비노기 모바일', cls: 'mabi', hasUser: true }
+};
+
+// event case studies per matchup: {idx, verdict, own, comp, result}
+var EVENTS = {
+  bdo_game: [
+    {idx:4,  verdict:'neutral',  own:'칼리 출시',        comp:'세라핌 출시',        result:'보합 (44→22 · 131→131)'},
+    {idx:12, verdict:'good',     own:'일리움·칼로스·HEXA', comp:'오딜리타 업데이트',  result:'메이플M 대폭개선, 검은사막 보합 (58→39 · 133→132)'},
+    {idx:14, verdict:'critical', own:'—',                comp:'오딜리타 약발 소멸', result:'동반 악화 (39→49 · 132→143)'},
+    {idx:15, verdict:'warning',  own:'—',                comp:'오딜리타 효과 지속', result:'상극 (49→63 · 143→112)'},
+    {idx:33, verdict:'warning',  own:'유니온챔피언',      comp:'하이델연회',        result:'상극 (83→89 · 204→159)'}
+  ],
+  ion2_game: [
+    {idx:4,  verdict:'warning', own:'칼리 출시', comp:'—',                    result:'아이온2만 소외 — 상극 (44→22 · 9→17)'},
+    {idx:9,  verdict:'warning', own:'—',        comp:'시즌2 업데이트(PvP개편)', result:'상극 (38→53 · 15→10)'},
+    {idx:30, verdict:'good',    own:'—',        comp:'SUMMERFESTA+fromis_9',  result:'동반 개선 (88→86 · 60→42)'},
+    {idx:32, verdict:'good',    own:'—',        comp:'Chapter 1',             result:'동반 개선 (98→83 · 41→34)'}
+  ],
+  ion2_user: [
+    {idx:9,  verdict:'critical', own:'—', comp:'시즌2 업데이트(PvP개편)',        result:'동반 소폭 악화 (83→84 · 36→41)'},
+    {idx:34, verdict:'warning',  own:'RE:BOOST 사전등록~출시', comp:'—',        result:'상극 (69→33 · 77→86)'}
+  ],
+  mabi_game: [
+    {idx:4,  verdict:'good',     own:'칼리 출시', comp:'산리오 콜라보 시작',    result:'동반 개선 (44→22 · 10→4)'},
+    {idx:16, verdict:'critical', own:'—',        comp:'메이플 콜라보 시작',    result:'동반 악화 (63→71 · 18→27)'},
+    {idx:31, verdict:'warning',  own:'오디움 업데이트', comp:'시즌2 쇼케이스(예고)', result:'상극 (86→91 · 49→13)'},
+    {idx:31, verdict:'warning',  own:'—',        comp:'시즌2 적용(48→6위)',    result:'상극 (91→98 · 13→6)'},
+    {idx:34, verdict:'warning',  own:'RE:BOOST 사전등록~출시', comp:'카브락 레이드', result:'상극 (87→34 · 17→28)'}
+  ],
+  mabi_user: [
+    {idx:31, verdict:'warning', own:'오디움 업데이트', comp:'시즌2 쇼케이스(예고)', result:'상극 (87→88 · 36→22)'},
+    {idx:34, verdict:'warning', own:'RE:BOOST',        comp:'카브락 레이드',        result:'상극 (69→33 · 39→55)'}
+  ]
+};
+
+var VERDICT_LABEL = { good:'동반/자사 개선', critical:'동반 악화', warning:'상극', neutral:'보합' };
+
+var HOOK_TYPES = ['성장지원형','콘텐츠추가형','IP콜라보형','상시복귀지원형'];
+var HOOK_MATRIX = {
+  '성장지원형':     { maple:{has:true,  ex:'하이퍼버닝'},        bdo:{has:false}, mabi:{has:true, ex:'레벨 85→100'},        ion2:{has:false} },
+  '콘텐츠추가형':   { maple:{has:true,  ex:'칼리 / 렌 등'},      bdo:{has:true, ex:'세라핌 등'},  mabi:{has:true, ex:'기사 등'},           ion2:{has:true, ex:'권성 등'} },
+  'IP콜라보형':     { maple:{has:false},                         bdo:{has:true, ex:'붉은사막(자사)'}, mabi:{has:true, ex:'산리오'},        ion2:{has:true, ex:'프로미스나인'} },
+  '상시복귀지원형': { maple:{has:false},                         bdo:{has:false}, mabi:{has:false},                          ion2:{has:true, ex:'새싹뱃지'} }
+};
+var HOOK_COUNTS = { maple:2, bdo:2, mabi:3, ion2:3 };
+
+var COMMUNITY_MENTION = [
+  {game:'메이플M',   cls:'self', rate:5.0, n:'20건 / 약 2시간 표본'},
+  {game:'검은사막M', cls:'bdo',  rate:9.5, n:'21건 / 약 2주 표본'},
+  {game:'마비노기M', cls:'mabi', rate:0.0, n:'41건 / 약 15분 표본'},
+  {game:'아이온2',   cls:'ion2', rate:0.0, n:'40건 / 약 10분 표본'}
+];
+
+var SEARCH_RETENTION = {
+  cats: ['M0','M1','M3','M6','M8'],
+  series: [
+    {game:"메이플M ('16.10 출시)",   cls:'self', vals:[100.0,25.2,8.4,3.3,4.3]},
+    {game:"검은사막M ('18.02 출시)", cls:'bdo',  vals:[100.0,61.6,9.1,7.4,4.5]},
+    {game:"마비노기M ('25.03 출시)", cls:'mabi', vals:[53.5,100.0,80.8,41.4,34.3]},
+    {game:"아이온2 ('25.11 출시)",   cls:'ion2', vals:[100.0,58.5,27.2,15.0,18.6]}
+  ]
+};
+
+var STORE_RATING = [
+  {game:'메이플스토리M',   gp:4.6, gpN:'18.8만', as:4.4, asN:'13.0만'},
+  {game:'검은사막 모바일', gp:4.4, gpN:'21.6만', as:4.2, asN:'6.0만'},
+  {game:'마비노기 모바일', gp:2.8, gpN:'3.6만',  as:3.3, asN:'0.83만'},
+  {game:'아이온2',         gp:2.9, gpN:'0.7만',  as:3.1, asN:'0.19만'}
+];
+
+var STRENGTHS = [
+  {label:'성장지원형 보유 (하이퍼버닝)', note:'검은사막·아이온2는 부재, 실제 Pain Point로 성장 마찰이 확인됨'},
+  {label:'스토어 평점 4.6(GP) / 4.4(App)', note:'4개사 중 최고, 리뷰 수도 최상위권으로 만족도 기반 잔존 신호 안정적'},
+  {label:"커뮤니티 '복귀' 언급률 5.0%", note:'마비노기·아이온2 대비 복귀 니즈 자체는 관측되고 있음, 최근 4주 +161.6% 반등세는 긍정 신호'}
+];
+var GAPS = [
+  {label:'IP콜라보형 미보유', note:'동일시기 콜라보 대비 유튜브 조회수 최대 69배 격차'},
+  {label:'상시복귀지원형 미보유', note:'4개사 중 아이온2만 보유, 이벤트 타이밍 리스크에 상시 노출'},
+  {label:'검색 관심 절대 점유율 최하위권', note:'현재 검색 관심 점유율 2.1% — 로드맵 성공지표 기준선'}
+];
+
+var STRATEGIES = [
+  { id:'STRAT-1', title:'IP · 브랜드 콜라보 확대', horizon:'중장기', effort:'high', impact:'high',
+    rationale:"마비노기의 산리오 콜라보와 메이플M의 칼리 출시가 겹친 Case 1에서 유튜브 조회수가 278.2만 대 4.1만 — 약 69배 격차. IP콜라보형은 메이플M이 유일하게 보유하지 않은 후킹 유형입니다.",
+    steps:['잠재 콜라보 IP 롱리스트 작성 (자사 IP 포함 + 외부 팬덤)','파트너십 리드타임 산정 및 우선순위 후보 2~3건 선정','쇼케이스·티저 등 화제성 극대화 시점에 런칭'],
+    risks:['콜라보 디자인 호불호로 초기 반응 양극화 가능','런칭 첫날 버그·운영 이슈가 화제성 반감','파트너십 협상 리드타임이 계획보다 길어질 가능성'],
+    kpis:['콜라보 발표 주간 유튜브 조회수 전월 대비 상승폭','콜라보 기간 검색 관심 점유율 변화',"커뮤니티 '복귀' 키워드 언급률 변화"] },
+  { id:'STRAT-2', title:'상시 복귀지원 시스템 신설', horizon:'장기', effort:'mid', impact:'high',
+    rationale:"아이온2 '새싹뱃지'(28일 미접속 후 자동 보상)는 4개사 중 유일한 상시복귀지원형 후킹 — 이벤트 타이밍과 무관하게 항상 가동되어 화제성 손실 리스크를 구조적으로 낮춥니다.",
+    steps:['미접속 기준일수(N일) 및 보상 수준 설계','성장지원형(하이퍼버닝)과의 중복·시너지 검토','상시 시스템 개발 → 소규모 테스트 → 전체 적용'],
+    risks:['보상 수준이 낮으면 실질적 복귀 유인이 되지 못함','기존 활성 유저와의 형평성 이슈 발생 가능','상시 시스템은 이벤트 대비 초기 개발 리드타임이 김'],
+    kpis:["시스템 도입 후 커뮤니티 '복귀' 키워드 언급률 변화",'미접속 유저의 재접속 전환율','재접속 유저의 D+7 잔존율'] },
+  { id:'STRAT-3', title:'시스템 리마스터 검토', horizon:'중장기', effort:'high', impact:'mid',
+    rationale:'검은사막 모바일의 단계적 리마스터(1차 03.03 → 2차 06.23~24 → 하이델연회 쇼케이스 07.11)는 장수 게임도 개편→쇼케이스 구조로 화제성을 재점화할 수 있음을 보여줍니다. 메이플M은 검은사막(8년차)보다 서비스 기간이 긴 10년차 서비스입니다.',
+    steps:['단계적 리마스터 로드맵 초안 수립','개발 리드타임(분기 단위) 산정','IP콜라보·상시복귀지원 실행 이후 로드맵 편입'],
+    risks:['개발 리드타임이 최소 분기 단위로 소요되는 중장기 과제','다른 실행전략과 리소스 경합 가능'],
+    kpis:['장기 서비스 안정성 지표(평점 4.6 유지 여부)'] },
+  { id:'STRAT-4', title:'이벤트 타이밍 관리 체계', horizon:'단기', effort:'low', impact:'high',
+    rationale:'이미 구축된 압력 판정 로직(본 대시보드 SIM 탭)을 그대로 재사용할 수 있어, 별도 개발 없이 운영 프로세스로만 편입하면 즉시 가동 가능한 항목입니다.',
+    steps:['4개사 이벤트 캘린더를 분기 초 업데이트, 신규 발표 시 즉시 반영','메이플M 대형 이벤트 계획 시 동일 기간 경쟁사 일정 자동 대조 (SIM 탭)','압력 등급에 따라 대응 선택 (High: 날짜조정/카드보강 · Mid: 모니터링강화 · Low: 예정대로)'],
+    risks:['압력 판정 로직의 정확도는 캘린더 최신화 여부에 의존'],
+    kpis:['이벤트 사전 충돌 감지 건수','캘린더 갱신 주기 준수율'] }
+];
+
+var ROADMAP = [
+  {phase:'단기', wk:'1개월', items:'커뮤니티 모니터링 체계 · 이벤트 캘린더 트래킹 구축', kpi:'충돌 사전 감지 건수, 캘린더 갱신 주기 준수율'},
+  {phase:'중기', wk:'1분기', items:'이벤트 타이밍 관리 체계 가동 · 콜라보 후보 롱리스트 작성', kpi:'압력 판정 대응 건수, 콜라보 후보 확정 수'},
+  {phase:'장기', wk:'반기', items:"상시 복귀지원 시스템 신설 · IP콜라보 1건 이상 실행", kpi:"'복귀' 언급률 변화, 검색 관심 점유율(현 2.1%) 변화"},
+  {phase:'중장기', wk:'1년+', items:'시스템 리마스터 로드맵 검토 착수', kpi:'장기 서비스 안정성 지표(평점 4.6 유지 여부)'}
+];
+
+var RISKS = [
+  {sev:'h', title:'실행 리소스 분산', note:'4건을 동시 착수하면 리소스가 분산될 수 있음 — 우선순위 매트릭스 순서(모니터링→타이밍관리→복귀지원→콜라보/리마스터)를 따라 순차 착수 권장'},
+  {sev:'m', title:'성공지표의 간접성', note:'제안된 성공지표는 대부분 상관관계 지표(검색 점유율, 언급률)이며 매출·DAU 등 직접 지표는 별도 유료 플랫폼 검증이 필요'},
+  {sev:'m', title:'데이터 갱신 주기', note:'커뮤니티 반응·검색 관심 데이터는 표본 기간이 짧아 스냅샷 성격 — 분기 단위로 재수집·재검증 필요'}
+];
+
+// SIM tab: preloaded competitor calendar (13 known events) — editable via localStorage
+var DEFAULT_CAL = [
+  {game:'검은사막', start:'2025-12-16', end:'2025-12-18', title:'세라핌 출시', scale:'big'},
+  {game:'검은사막', start:'2026-02-10', end:'2026-02-12', title:'오딜리타 업데이트', scale:'mid'},
+  {game:'검은사막', start:'2026-07-09', end:'2026-07-11', title:'하이델연회', scale:'big'},
+  {game:'아이온2', start:'2026-01-21', end:'2026-01-21', title:'시즌2 업데이트(PvP개편)', scale:'mid'},
+  {game:'아이온2', start:'2026-06-14', end:'2026-06-14', title:'SUMMERFESTA+fromis_9', scale:'big'},
+  {game:'아이온2', start:'2026-07-01', end:'2026-07-01', title:'Chapter 1', scale:'big'},
+  {game:'마비노기', start:'2025-12-16', end:'2025-12-18', title:'산리오 콜라보 시작', scale:'big'},
+  {game:'마비노기', start:'2026-03-12', end:'2026-03-12', title:'메이플 콜라보 시작', scale:'mid'},
+  {game:'마비노기', start:'2026-06-19', end:'2026-06-19', title:'시즌2 쇼케이스(예고)', scale:'mid'},
+  {game:'마비노기', start:'2026-06-25', end:'2026-06-25', title:'시즌2 적용(레벨확장)', scale:'big'},
+  {game:'마비노기', start:'2026-07-16', end:'2026-07-31', title:'카브락 레이드', scale:'big'}
+];
+
+/* =================== HELPERS =================== */
+function el(tag, attrs, children) {
+  var e = document.createElement(tag);
+  for (var k in (attrs||{})) {
+    if (k === 'class') e.className = attrs[k];
+    else if (k === 'html') e.innerHTML = attrs[k];
+    else e.setAttribute(k, attrs[k]);
+  }
+  (children||[]).forEach(function(c){ if (c) e.appendChild(c); });
+  return e;
+}
+function txt(s){ return document.createTextNode(s); }
+function svgEl(tag, attrs) {
+  var e = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (var k in (attrs||{})) e.setAttribute(k, attrs[k]);
+  return e;
+}
+function fmtPct(v){ return (Math.round(v*10)/10).toFixed(1); }
+
+/* =================== RANK CHART (reusable) =================== */
+function renderRankChart(container, opts) {
+  // opts: { series: [{data, cls, label}], imputedFrom, events, weeks, title }
+  var W = 720, H = 260, padL = 34, padR = 16, padT = 12, padB = 26;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  var weeks = opts.weeks;
+  var allVals = [];
+  opts.series.forEach(function(s){ s.data.forEach(function(v){ if (v!=null) allVals.push(v); }); });
+  var yMax = Math.max.apply(null, allVals) + 10, yMin = 1;
+  function x(i){ return padL + (i/(weeks.length-1)) * plotW; }
+  function y(v){ return padT + ((v-yMin)/(yMax-yMin)) * plotH; }
+
+  container.innerHTML = '';
+  var svg = svgEl('svg', {viewBox:'0 0 '+W+' '+H, class:'chart'});
+  container.appendChild(svg);
+
+  // gridlines
+  var niceTicks = [1,25,50,75,100,125,150,175,200,225].filter(function(t){ return t<=yMax; });
+  // thin out ticks if too many
+  var step = niceTicks.length > 6 ? 2 : 1;
+  niceTicks.filter(function(_,i){return i%step===0;}).forEach(function(t){
+    var gy = y(t);
+    svg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:gy,y2:gy,stroke:'var(--grid-line)','stroke-width':1}));
+    var lbl = svgEl('text',{x:padL-7,y:gy+3,'text-anchor':'end','font-size':9.5,fill:'var(--ink-3)','font-family':'IBM Plex Mono, monospace'});
+    lbl.textContent = t; svg.appendChild(lbl);
+  });
+  // x labels (sparse, every ~4 weeks)
+  weeks.forEach(function(w,i){
+    if (i % 4 !== 0 && i !== weeks.length-1) return;
+    var lx = x(i);
+    var lbl = svgEl('text',{x:lx,y:H-6,'text-anchor':'middle','font-size':9,fill:'var(--ink-3)','font-family':'IBM Plex Mono, monospace'});
+    lbl.textContent = w; svg.appendChild(lbl);
+  });
+
+  function pathSeg(arr, from, to) {
+    var d = '';
+    for (var i = from; i <= to; i++) {
+      if (arr[i] == null) continue;
+      d += (i===from ? 'M':'L') + x(i).toFixed(1) + ',' + y(arr[i]).toFixed(1) + ' ';
+    }
+    return d;
+  }
+
+  opts.series.forEach(function(s){
+    var lastReal = s.data.length - 1;
+    var impFrom = (s.cls === 'bdo' && opts.imputedFrom != null) ? opts.imputedFrom : null;
+    var mainEnd = impFrom != null ? impFrom : lastReal;
+    var w = s.cls === 'self' ? 2.5 : 2;
+    svg.appendChild(svgEl('path',{d:pathSeg(s.data,0,mainEnd), fill:'none', class:'ln-'+s.cls, 'stroke-width':w, 'stroke-linecap':'round','stroke-linejoin':'round'}));
+    if (impFrom != null) {
+      svg.appendChild(svgEl('path',{d:pathSeg(s.data,impFrom,lastReal), fill:'none', class:'ln-'+s.cls, 'stroke-width':w, 'stroke-dasharray':'3 4', opacity:0.5}));
+    }
+    svg.appendChild(svgEl('circle',{cx:x(lastReal), cy:y(s.data[lastReal]), r:4, class:'dot-fill-'+s.cls}));
+  });
+
+  // event markers
+  (opts.events||[]).forEach(function(ev){
+    var yy = y(opts.series[0].data[ev.idx]);
+    var c = svgEl('circle',{cx:x(ev.idx), cy: padT-2, r:4.5, class:'evt-'+ev.verdict, 'data-idx':ev.idx});
+    c.style.cursor = 'pointer';
+    svg.appendChild(c);
+    svg.appendChild(svgEl('line',{x1:x(ev.idx),x2:x(ev.idx),y1:padT+2,y2:H-padB,stroke:'var(--line)','stroke-width':1,'stroke-dasharray':'2 3', opacity:0.6}));
+  });
+
+  // hover interaction
+  var tooltip = el('div',{class:'tooltip'});
+  container.appendChild(tooltip);
+  var hoverLine = svgEl('line',{x1:0,x2:0,y1:padT,y2:H-padB,stroke:'var(--ink-3)','stroke-width':1,opacity:0});
+  svg.appendChild(hoverLine);
+  var hoverDots = opts.series.map(function(s){
+    var d = svgEl('circle',{r:4.5, class:'dot-fill-'+s.cls, opacity:0, stroke:'var(--surface)','stroke-width':2});
+    svg.appendChild(d); return d;
+  });
+  var overlay = svgEl('rect',{x:padL,y:padT,width:plotW,height:plotH,fill:'transparent',style:'cursor:crosshair'});
+  svg.appendChild(overlay);
+
+  function nearest(mx){
+    var rel = (mx-padL)/plotW;
+    return Math.max(0, Math.min(weeks.length-1, Math.round(rel*(weeks.length-1))));
+  }
+  function showTip(idx, clientX, clientY, rect){
+    var px = x(idx);
+    hoverLine.setAttribute('x1',px); hoverLine.setAttribute('x2',px); hoverLine.setAttribute('opacity',0.5);
+    var rows = '<div class="tt-h">'+weeks[idx]+'</div>';
+    opts.series.forEach(function(s, si){
+      var v = s.data[idx];
+      var isImp = s.cls==='bdo' && opts.imputedFrom!=null && idx>=opts.imputedFrom;
+      hoverDots[si].setAttribute('cx',px); hoverDots[si].setAttribute('cy', v!=null? y(v): -50); hoverDots[si].setAttribute('opacity', v!=null?1:0);
+      if (v!=null) rows += '<div class="tt-row"><span class="dot '+s.cls+'"></span>'+s.label+' &nbsp;'+Math.round(v)+'위'+(isImp?' (결측 추정)':'')+'</div>';
+    });
+    var ev = (opts.events||[]).find(function(e){return e.idx===idx;});
+    if (ev) rows += '<div class="tt-row" style="margin-top:4px;"><span class="dot '+ev.verdict+'"></span>'+ev.result+'</div>';
+    tooltip.innerHTML = rows;
+    var scaleX = rect.width / W, scaleY = rect.height / H;
+    tooltip.style.left = (px*scaleX) + 'px';
+    tooltip.style.top = (Math.min.apply(null, opts.series.map(function(s){return s.data[idx]!=null?y(s.data[idx]):H;})) * scaleY) + 'px';
+    tooltip.style.opacity = 1;
+  }
+  overlay.addEventListener('mousemove', function(evt){
+    var rect = svg.getBoundingClientRect();
+    var mx = (evt.clientX - rect.left) * (W/rect.width);
+    showTip(nearest(mx), evt.clientX, evt.clientY, rect);
+  });
+  overlay.addEventListener('mouseleave', function(){
+    hoverLine.setAttribute('opacity',0);
+    hoverDots.forEach(function(d){ d.setAttribute('opacity',0); });
+    tooltip.style.opacity = 0;
+  });
+}
+
+/* =================== BAR CHART (커뮤니티 언급률) =================== */
+function renderBarChart(container, data) {
+  var maxV = Math.max.apply(null, data.map(function(d){return d.rate;})) || 1;
+  container.innerHTML = '';
+  data.forEach(function(d){
+    var row = el('div',{class:'bar-row'});
+    row.appendChild(el('div',{},[txt(d.game)]));
+    var track = el('div',{class:'bar-track'});
+    var fill = el('div',{class:'bar-fill dot-fill-'+d.cls, style:'width:'+Math.max(3,(d.rate/maxV*100))+'%'});
+    track.appendChild(fill);
+    row.appendChild(track);
+    row.appendChild(el('div',{class:'mono', style:'text-align:right'},[txt(fmtPct(d.rate)+'%')]));
+    container.appendChild(row);
+    container.appendChild(el('div',{style:'font-size:11px;color:var(--ink-3);margin:-4px 0 4px 0;'},[txt(d.n)]));
+  });
+}
+
+/* =================== COHORT LINE CHART (검색 잔존율) =================== */
+function renderCohortChart(container, cfg) {
+  var W = 640, H = 240, padL = 34, padR = 100, padT = 14, padB = 26;
+  var plotW = W - padL - padR, plotH = H - padT - padB;
+  function x(i){ return padL + (i/(cfg.cats.length-1)) * plotW; }
+  function y(v){ return padT + (1 - v/100) * plotH; }
+  container.innerHTML = '';
+  var svg = svgEl('svg',{viewBox:'0 0 '+W+' '+H, class:'chart'});
+  container.appendChild(svg);
+  [0,25,50,75,100].forEach(function(t){
+    var gy = y(t);
+    svg.appendChild(svgEl('line',{x1:padL,x2:W-padR,y1:gy,y2:gy,stroke:'var(--grid-line)','stroke-width':1}));
+    var lbl = svgEl('text',{x:padL-7,y:gy+3,'text-anchor':'end','font-size':9.5,fill:'var(--ink-3)','font-family':'IBM Plex Mono, monospace'});
+    lbl.textContent = t+'%'; svg.appendChild(lbl);
+  });
+  cfg.cats.forEach(function(c,i){
+    var lbl = svgEl('text',{x:x(i),y:H-6,'text-anchor':'middle','font-size':10,fill:'var(--ink-3)','font-family':'IBM Plex Mono, monospace'});
+    lbl.textContent = c; svg.appendChild(lbl);
+  });
+  cfg.series.forEach(function(s){
+    var d = s.vals.map(function(v,i){ return (i===0?'M':'L')+x(i).toFixed(1)+','+y(v).toFixed(1); }).join(' ');
+    svg.appendChild(svgEl('path',{d:d, fill:'none', class:'ln-'+s.cls, 'stroke-width': s.cls==='self'?2.5:2, 'stroke-linecap':'round','stroke-linejoin':'round'}));
+    s.vals.forEach(function(v,i){ svg.appendChild(svgEl('circle',{cx:x(i),cy:y(v),r:3,class:'dot-fill-'+s.cls})); });
+  });
+  // direct end-labels, staggered to avoid collisions when final values are close
+  var lastI = cfg.cats.length - 1;
+  var labelRows = cfg.series.map(function(s){
+    return { cls: s.cls, name: s.game.split(' ')[0], val: s.vals[lastI], y: y(s.vals[lastI]) };
+  }).sort(function(a,b){ return a.y - b.y; });
+  var MIN_GAP = 13;
+  for (var li = 1; li < labelRows.length; li++) {
+    if (labelRows[li].y - labelRows[li-1].y < MIN_GAP) labelRows[li].y = labelRows[li-1].y + MIN_GAP;
+  }
+  labelRows.forEach(function(r){
+    var lbl = svgEl('text',{x:x(lastI)+8,y:r.y+3,'font-size':10.5,'font-family':'IBM Plex Mono, monospace', class:'txt-'+r.cls});
+    lbl.textContent = r.name+' '+fmtPct(r.val)+'%';
+    svg.appendChild(lbl);
+  });
+}
+
+/* =================== TAB: EXE =================== */
+function panelEXE() {
+  var wrap = el('div');
+  var b1 = el('section',{class:'blk'});
+  b1.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('분기 핵심 지표')]), el('span',{class:'blk-note'},[txt('2026 Q2 · 전분기(QoQ) 대비 · 신뢰도: UNVERIFIED-EXT')])]));
+  var kpis = [
+    {v:'128,400', l:'신규 설치 (건)', d:'▲ 32% QoQ'},
+    {v:'4.2억원', l:'총 매출', d:'▲ 18% QoQ'},
+    {v:'61,200', l:'일 평균 접속자 (DAU)', d:'▲ 9% QoQ'},
+    {v:'312%', l:'광고 수익률 (ROAS)', d:'▲ 45%p QoQ'}
+  ];
+  var kgrid = el('div',{class:'grid grid-4'});
+  kpis.forEach(function(k){ kgrid.appendChild(el('div',{class:'kpi'},[el('div',{class:'v'},[txt(k.v)]), el('div',{class:'l'},[txt(k.l)]), el('div',{class:'d'},[txt(k.d)])])); });
+  b1.appendChild(kgrid);
+  wrap.appendChild(b1);
+
+  var b2 = el('section',{class:'blk'});
+  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('리텐션 후킹 보유 현황')]), el('span',{class:'blk-note'},[txt('4유형 중 보유 개수 · 자체 리서치')])]));
+  var hgrid = el('div',{class:'grid grid-4'});
+  [['메이플M','self'],['검은사막M','bdo'],['마비노기M','mabi'],['아이온2','ion2']].forEach(function(g){
+    var key = g[0]==='메이플M'?'maple':g[0]==='검은사막M'?'bdo':g[0]==='마비노기M'?'mabi':'ion2';
+    hgrid.appendChild(el('div',{class:'card'},[
+      el('h4',{},[el('span',{class:'dot '+g[1], style:'margin-right:7px;'},[]),txt(g[0])]),
+      el('p',{},[txt('보유 '+HOOK_COUNTS[key]+' / 4 유형')])
+    ]));
+  });
+  b2.appendChild(hgrid);
+  wrap.appendChild(b2);
+
+  var b3 = el('section',{class:'blk'});
+  b3.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('강점 / 공백 요약')])]));
+  var sgrid = el('div',{class:'grid grid-2'});
+  var sCard = el('div',{class:'card'},[el('h4',{style:'color:var(--good)'},[txt('강점 Strength')])]);
+  STRENGTHS.forEach(function(s){ sCard.appendChild(el('div',{style:'margin-top:10px;'},[el('div',{style:'font-weight:700;font-size:13px;'},[txt(s.label)]), el('div',{style:'font-size:12px;color:var(--ink-2);margin-top:2px;'},[txt(s.note)])])); });
+  var gCard = el('div',{class:'card'},[el('h4',{style:'color:var(--critical)'},[txt('공백 Gap')])]);
+  GAPS.forEach(function(s){ gCard.appendChild(el('div',{style:'margin-top:10px;'},[el('div',{style:'font-weight:700;font-size:13px;'},[txt(s.label)]), el('div',{style:'font-size:12px;color:var(--ink-2);margin-top:2px;'},[txt(s.note)])])); });
+  sgrid.appendChild(sCard); sgrid.appendChild(gCard);
+  b3.appendChild(sgrid);
+  wrap.appendChild(b3);
+  return wrap;
+}
+
+/* =================== TAB: RANK =================== */
+var rankState = { comp:'bdo', metric:'game', period:'all' };
+function panelRANK() {
+  var wrap = el('div');
+  var filterRow = el('div',{class:'filter-row'});
+  var compSeg = el('div',{class:'seg'});
+  Object.keys(COMPETITORS).forEach(function(k){
+    var btn = el('button',{'data-group':'comp','data-val':k},[txt(COMPETITORS[k].label)]);
+    if (k===rankState.comp) btn.classList.add('active');
+    btn.addEventListener('click', function(){ rankState.comp = k; if (k==='bdo') rankState.metric='game'; syncFilterButtons(); renderRANKBody(); });
+    compSeg.appendChild(btn);
+  });
+  filterRow.appendChild(compSeg);
+
+  var metricSeg = el('div',{class:'seg'});
+  ['game','user'].forEach(function(m){
+    var btn = el('button',{'data-group':'metric','data-val':m},[txt(m==='game'?'게임(매출)순위':'이용자수순위')]);
+    if (m===rankState.metric) btn.classList.add('active');
+    btn.addEventListener('click', function(){ rankState.metric = m; syncFilterButtons(); renderRANKBody(); });
+    metricSeg.appendChild(btn);
+  });
+  filterRow.appendChild(metricSeg);
+
+  var periodSeg = el('div',{class:'seg'});
+  [['all','전체 39주'],['recent','최근 12주']].forEach(function(p){
+    var btn = el('button',{'data-group':'period','data-val':p[0]},[txt(p[1])]);
+    if (p[0]===rankState.period) btn.classList.add('active');
+    btn.addEventListener('click', function(){ rankState.period = p[0]; syncFilterButtons(); renderRANKBody(); });
+    periodSeg.appendChild(btn);
+  });
+  filterRow.appendChild(periodSeg);
+
+  wrap.appendChild(filterRow);
+  var body = el('div',{id:'rankBody'});
+  wrap.appendChild(body);
+
+  var b2 = el('section',{class:'blk'});
+  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('4사 동시 비교')]), el('span',{class:'blk-note'},[txt('39주 실측 · 검은사막 7/20 이후 결측')])]));
+  var comboCard = el('div',{class:'chart-card'});
+  comboCard.appendChild(el('div',{class:'legend'},[
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-self'},[]),txt('메이플M')]),
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-bdo'},[]),txt('검은사막M')]),
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-ion2'},[]),txt('아이온2')]),
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-mabi'},[]),txt('마비노기M')])
+  ]));
+  var comboChartWrap = el('div',{class:'chart-wrap'});
+  comboCard.appendChild(comboChartWrap);
+  comboCard.appendChild(el('div',{class:'chart-note', style:'margin-top:8px;'},[txt('6/8주차: 4사 전부 동반 하락(자체 대형 업데이트 직전 공백기) · 7/6~8/3: 4사 대형 이벤트가 실제로 겹친 구간')]));
+  b2.appendChild(comboCard);
+  wrap.appendChild(b2);
+
+  setTimeout(function(){
+    renderRANKBody();
+    renderRankChart(comboChartWrap, {
+      weeks: WEEKS,
+      imputedFrom: BDO_IMPUTED_FROM,
+      series: [
+        {data:RANK.maple_game, cls:'self', label:'메이플M'},
+        {data:RANK.bdo_game, cls:'bdo', label:'검은사막M'},
+        {data:RANK.ion2_game, cls:'ion2', label:'아이온2'},
+        {data:RANK.mabi_game, cls:'mabi', label:'마비노기M'}
+      ]
+    });
+  }, 0);
+
+  return wrap;
+}
+
+function syncFilterButtons(){
+  document.querySelectorAll('.seg button[data-group]').forEach(function(b){
+    var group = b.getAttribute('data-group');
+    var current = group==='comp' ? rankState.comp : group==='metric' ? rankState.metric : rankState.period;
+    b.classList.toggle('active', b.getAttribute('data-val') === current);
+  });
+}
+
+function renderRANKBody(){
+  var body = document.getElementById('rankBody');
+  if (!body) return;
+  body.innerHTML = '';
+  var comp = rankState.comp, metric = rankState.metric;
+  var compInfo = COMPETITORS[comp];
+  if (metric==='user' && !compInfo.hasUser) { metric = 'game'; rankState.metric='game'; syncFilterButtons(); }
+
+  var key = comp+'_'+metric;
+  var compData = RANK[key];
+  var mapleData = metric==='game' ? RANK.maple_game : RANK.maple_user;
+  var events = EVENTS[key] || [];
+
+  var card = el('div',{class:'chart-card'});
+  card.appendChild(el('div',{class:'chart-head'},[
+    el('h4',{},[txt('메이플스토리M vs '+compInfo.label+' — '+(metric==='game'?'게임(매출)순위':'이용자수순위'))]),
+    el('span',{class:'chart-note'},[txt('39주 실측 · 순위 1위가 상단')])
+  ]));
+  var legend = el('div',{class:'legend'},[
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-self'},[]),txt('메이플스토리M')]),
+    el('span',{class:'li'},[el('span',{class:'sw dot-fill-'+comp},[]),txt(compInfo.label)])
+  ]);
+  if (comp==='bdo' && metric==='game') legend.appendChild(el('span',{class:'li'},[el('span',{class:'sw', style:'background:var(--comp-bdo);opacity:.45;'},[]),txt('결측(200위 대체)')]));
+  card.appendChild(legend);
+  var cw = el('div',{class:'chart-wrap'});
+  card.appendChild(cw);
+  body.appendChild(card);
+
+  var evLegend = el('div',{class:'legend', style:'margin-top:14px;'});
+  ['good','warning','critical','neutral'].forEach(function(v){
+    evLegend.appendChild(el('span',{class:'li'},[el('span',{class:'dot '+v},[]),txt(VERDICT_LABEL[v])]));
+  });
+  body.appendChild(evLegend);
+
+  // events table
+  if (events.length) {
+    var twrap = el('div',{class:'table-wrap', style:'margin-top:10px;'});
+    var table = el('table');
+    var thead = el('thead',{},[el('tr',{},[el('th',{},[txt('시점')]),el('th',{},[txt('메이플M 이벤트')]),el('th',{},[txt(compInfo.label)]),el('th',{},[txt('결과')])])]);
+    table.appendChild(thead);
+    var tbody = el('tbody');
+    events.forEach(function(e){
+      tbody.appendChild(el('tr',{},[
+        el('td',{class:'strong mono'},[txt(WEEKS[e.idx])]),
+        el('td',{},[txt(e.own)]),
+        el('td',{},[txt(e.comp)]),
+        el('td',{},[el('span',{class:'dot '+e.verdict, style:'margin-right:6px;'},[]),txt(e.result)])
+      ]));
+    });
+    table.appendChild(tbody);
+    twrap.appendChild(table);
+    body.appendChild(twrap);
+  }
+
+  setTimeout(function(){
+    var weeks = WEEKS, mData = mapleData, cData = compData, impFrom = (comp==='bdo'&&metric==='game') ? BDO_IMPUTED_FROM : null;
+    if (rankState.period==='recent') {
+      weeks = WEEKS.slice(-12); mData = mapleData.slice(-12); cData = compData.slice(-12);
+      impFrom = impFrom!=null ? Math.max(0, impFrom-(WEEKS.length-12)) : null;
+    }
+    var evForChart = events.map(function(e){ return {idx: rankState.period==='recent'? e.idx-(WEEKS.length-12) : e.idx, verdict:e.verdict, result:e.result}; }).filter(function(e){return e.idx>=0;});
+    renderRankChart(cw, {
+      weeks: weeks, imputedFrom: impFrom,
+      series: [ {data:mData, cls:'self', label:'메이플M'}, {data:cData, cls:comp, label:compInfo.label} ],
+      events: evForChart
+    });
+  }, 0);
+}
+
+/* =================== TAB: RETN =================== */
+function panelRETN() {
+  var wrap = el('div');
+
+  // hooking matrix
+  var b1 = el('section',{class:'blk'});
+  b1.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('리텐션 후킹 4유형 보유 현황')]), el('span',{class:'blk-note'},[txt('자체 리서치 · UNVERIFIED-EXT')])]));
+  var mwrap = el('div',{class:'hmatrix'});
+  var table = el('table');
+  var thead = el('thead',{},[el('tr',{},[el('th',{},[txt('후킹유형')]),el('th',{},[txt('메이플M')]),el('th',{},[txt('검은사막M')]),el('th',{},[txt('마비노기M')]),el('th',{},[txt('아이온2')])])]);
+  table.appendChild(thead);
+  var tbody = el('tbody');
+  HOOK_TYPES.forEach(function(ht){
+    var row = HOOK_MATRIX[ht];
+    var tr = el('tr',{},[el('td',{class:'strong'},[txt(ht)])]);
+    ['maple','bdo','mabi','ion2'].forEach(function(g){
+      var cell = row[g];
+      tr.appendChild(el('td',{},[ cell.has ? el('span',{class:'hcell-yes'},[txt('● '+(cell.ex||''))]) : el('span',{class:'hcell-no'},[txt('—')]) ]));
+    });
+    tbody.appendChild(tr);
+  });
+  table.appendChild(tbody);
+  mwrap.appendChild(table);
+  b1.appendChild(mwrap);
+  wrap.appendChild(b1);
+
+  // case studies
+  var b2 = el('section',{class:'blk'});
+  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('케이스 스터디')])]));
+  var cgrid = el('div',{class:'grid grid-3'});
+
+  var case1 = el('div',{class:'case-card'});
+  case1.appendChild(el('div',{class:'case-tag'},[txt('CASE 1 · IP콜라보형')]));
+  case1.appendChild(el('h4',{},[txt('IP콜라보 화제성 격차')]));
+  case1.appendChild(el('p',{},[txt('메이플M 칼리 출시 vs 마비노기 산리오 콜라보가 같은 주에 겹쳤을 때 — 유튜브 조회수 69배 격차')]));
+  var bar1 = el('div',{class:'bar-compare'});
+  bar1.appendChild(el('div',{class:'bar-row'},[el('div',{},[txt('메이플M')]), el('div',{class:'bar-track'},[el('div',{class:'bar-fill dot-fill-self', style:'width:3%'},[])]), el('div',{class:'mono',style:'text-align:right'},[txt('4.1만')])]));
+  bar1.appendChild(el('div',{class:'bar-row'},[el('div',{},[txt('마비노기M')]), el('div',{class:'bar-track'},[el('div',{class:'bar-fill dot-fill-mabi', style:'width:100%'},[])]), el('div',{class:'mono',style:'text-align:right'},[txt('278.2만')])]));
+  case1.appendChild(bar1);
+  cgrid.appendChild(case1);
+
+  var case2 = el('div',{class:'case-card'});
+  case2.appendChild(el('div',{class:'case-tag'},[txt('CASE 2 · 성장지원형')]));
+  case2.appendChild(el('h4',{},[txt('레벨 확장의 화제성 전환')]));
+  case2.appendChild(el('p',{},[txt("마비노기 시즌2 '빛과 어둠'(레벨 85→100) 업데이트 이후 순위가 48위 → 6위로 급등. 커뮤니티 키워드 \"30분컷\" 등 복귀장벽 완화 체감으로 언급됨.")]));
+  case2.appendChild(el('div',{class:'case-stat-row'},[ el('div',{class:'case-stat'},[el('div',{class:'cv'},[txt('48 → 6위')]), el('div',{class:'cl'},[txt('마비노기 게임순위')])]) ]));
+  cgrid.appendChild(case2);
+
+  var case3 = el('div',{class:'case-card'});
+  case3.appendChild(el('div',{class:'case-tag'},[txt('CASE 3 · 상시복귀지원형')]));
+  case3.appendChild(el('h4',{},[txt("아이온2 '새싹뱃지' 단독사례")]));
+  case3.appendChild(el('p',{},[txt('28일 이상 미접속 유저 복귀 시 자동 성장지원 보상. 4개사 중 아이온2가 유일하게 보유 — 이벤트 타이밍과 무관하게 항상 가동되는 채널.')]));
+  case3.appendChild(el('div',{class:'case-stat-row'},[ el('div',{class:'case-stat'},[el('div',{class:'cv'},[txt('1 / 4')]), el('div',{class:'cl'},[txt('보유사 수')])]) ]));
+  cgrid.appendChild(case3);
+
+  b2.appendChild(cgrid);
+  wrap.appendChild(b2);
+
+  // community mention + search retention
+  var b3 = el('section',{class:'blk'});
+  b3.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt("커뮤니티 '복귀' 언급률 & 검색 관심 잔존율")]), el('span',{class:'blk-note'},[txt('표본 기간 상이 — 직접 비교 시 주의')])]));
+  var grid2 = el('div',{class:'grid grid-2'});
+  var barCard = el('div',{class:'chart-card'});
+  barCard.appendChild(el('h4',{},[txt("커뮤니티 게시글 중 '복귀' 키워드 언급 비율")]));
+  var barBody = el('div',{style:'margin-top:14px;'});
+  barCard.appendChild(barBody);
+  grid2.appendChild(barCard);
+
+  var cohortCard = el('div',{class:'chart-card'});
+  cohortCard.appendChild(el('h4',{},[txt('출시 후 검색 관심 잔존율 (자체 피크=100 정규화)')]));
+  var cohortWrap = el('div',{class:'chart-wrap', style:'margin-top:6px;'});
+  cohortCard.appendChild(cohortWrap);
+  grid2.appendChild(cohortCard);
+  b3.appendChild(grid2);
+  wrap.appendChild(b3);
+
+  // store rating
+  var b4 = el('section',{class:'blk'});
+  b4.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('스토어 평점 · 리뷰 규모')])]));
+  var twrap = el('div',{class:'table-wrap'});
+  var st = el('table');
+  st.appendChild(el('thead',{},[el('tr',{},[el('th',{},[txt('게임')]),el('th',{class:'num'},[txt('GP 평점')]),el('th',{class:'num'},[txt('GP 리뷰수')]),el('th',{class:'num'},[txt('App 평점')]),el('th',{class:'num'},[txt('App 리뷰수')])])]));
+  var sb = el('tbody');
+  STORE_RATING.forEach(function(r){
+    sb.appendChild(el('tr',{},[el('td',{class:'strong'},[txt(r.game)]), el('td',{class:'num mono'},[txt(r.gp.toFixed(1))]), el('td',{class:'num mono'},[txt(r.gpN)]), el('td',{class:'num mono'},[txt(r.as.toFixed(1))]), el('td',{class:'num mono'},[txt(r.asN)])]));
+  });
+  st.appendChild(sb);
+  twrap.appendChild(st);
+  b4.appendChild(twrap);
+  wrap.appendChild(b4);
+
+  setTimeout(function(){
+    renderBarChart(barBody, COMMUNITY_MENTION);
+    renderCohortChart(cohortWrap, SEARCH_RETENTION);
+  }, 0);
+
+  return wrap;
+}
+
+/* =================== TAB: SIM =================== */
+var simState = { cal: null, ownStart:'', ownEnd:'', ownTitle:'' };
+function loadCal(){
+  try {
+    var raw = localStorage.getItem('maplem_sim_cal');
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return DEFAULT_CAL.slice();
+}
+function saveCal(cal){
+  try { localStorage.setItem('maplem_sim_cal', JSON.stringify(cal)); } catch(e) {}
+}
+
+function panelSIM() {
+  simState.cal = loadCal();
+  var wrap = el('div');
+  var note = el('div',{class:'card', style:'margin-bottom:22px;'},[
+    el('h4',{},[txt('압력 판정 로직')]),
+    el('p',{},[txt('자사 이벤트 기간과 겹치는 경쟁사 이벤트의 "수"와 "규모"로 압력 등급을 산정합니다: 겹치는 경쟁사 0곳 → Low · 1곳 → Mid · 2곳 이상 → High. 겹치는 이벤트 중 "대형(big)"이 하나라도 있으면 한 단계 상향합니다.')])
+  ]);
+  wrap.appendChild(note);
+
+  var grid = el('div',{class:'sim-grid'});
+
+  // left: form + calendar
+  var left = el('div');
+  var formCard = el('div',{class:'card'});
+  formCard.appendChild(el('h4',{},[txt('자사 이벤트 입력')]));
+  var fRow = el('div',{class:'field-row'});
+  var fStart = el('div',{class:'field'},[el('label',{},[txt('시작일')]), el('input',{type:'date', id:'simStart'})]);
+  var fEnd = el('div',{class:'field'},[el('label',{},[txt('종료일')]), el('input',{type:'date', id:'simEnd'})]);
+  fRow.appendChild(fStart); fRow.appendChild(fEnd);
+  formCard.appendChild(fRow);
+  formCard.appendChild(el('div',{class:'field'},[el('label',{},[txt('이벤트명')]), el('input',{type:'text', id:'simTitle', placeholder:'예: 신규 직업 출시'})]));
+  var btnRow = el('div',{class:'btn-row'});
+  var calcBtn = el('button',{class:'btn'},[txt('압력 등급 계산')]);
+  btnRow.appendChild(calcBtn);
+  formCard.appendChild(btnRow);
+  left.appendChild(formCard);
+
+  var calCard = el('div',{class:'card', style:'margin-top:16px;'});
+  var calHead = el('div',{style:'display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;'},[
+    el('h4',{},[txt('경쟁사 이벤트 캘린더')]),
+    el('button',{class:'btn secondary', id:'resetCal', style:'font-size:11px;padding:6px 10px;'},[txt('기본값 복원')])
+  ]);
+  calCard.appendChild(calHead);
+  var addRow = el('div',{class:'field-row'});
+  var addGame = el('select',{id:'addGame'},[
+    el('option',{value:'검은사막'},[txt('검은사막')]), el('option',{value:'아이온2'},[txt('아이온2')]), el('option',{value:'마비노기'},[txt('마비노기')])
+  ]);
+  addRow.appendChild(el('div',{class:'field'},[el('label',{},[txt('경쟁사')]), addGame]));
+  var addTitle = el('input',{type:'text', id:'addTitle', placeholder:'이벤트명'});
+  addRow.appendChild(el('div',{class:'field'},[el('label',{},[txt('이벤트명')]), addTitle]));
+  calCard.appendChild(addRow);
+  var addRow2 = el('div',{class:'field-row'});
+  var addStart = el('input',{type:'date', id:'addStart'});
+  var addEnd = el('input',{type:'date', id:'addEnd'});
+  var addScale = el('select',{id:'addScale'},[el('option',{value:'small'},[txt('소형')]),el('option',{value:'mid'},[txt('중형')]),el('option',{value:'big'},[txt('대형')])]);
+  addRow2.appendChild(el('div',{class:'field'},[el('label',{},[txt('시작일')]), addStart]));
+  addRow2.appendChild(el('div',{class:'field'},[el('label',{},[txt('종료일')]), addEnd]));
+  addRow2.appendChild(el('div',{class:'field'},[el('label',{},[txt('규모')]), addScale]));
+  calCard.appendChild(addRow2);
+  calCard.appendChild(el('button',{class:'btn secondary', id:'addCalBtn', style:'margin-bottom:12px;'},[txt('+ 캘린더에 추가')]));
+  var calList = el('ul',{class:'cal-list', id:'calList'});
+  calCard.appendChild(calList);
+  left.appendChild(calCard);
+  grid.appendChild(left);
+
+  // right: result
+  var right = el('div');
+  var resultCard = el('div',{class:'pressure-result low', id:'pressureResult'},[
+    el('div',{class:'grade'},[txt('—')]),
+    el('div',{class:'desc'},[txt('자사 이벤트를 입력하고 계산을 눌러주세요')])
+  ]);
+  right.appendChild(resultCard);
+  var overlapCard = el('div',{class:'card', style:'margin-top:14px;'},[el('h4',{},[txt('겹치는 경쟁사 이벤트')]), el('ul',{class:'overlap-list', id:'overlapList'})]);
+  right.appendChild(overlapCard);
+
+  var guideCard = el('div',{class:'card', style:'margin-top:14px;'});
+  guideCard.appendChild(el('h4',{},[txt('등급별 대응 가이드')]));
+  var guideRow = el('div',{class:'guide-row'});
+  [['Low','예정대로 진행'], ['Mid','화제성 모니터링 강화'], ['High','날짜 조정 또는 카드 강도 보강']].forEach(function(g){
+    guideRow.appendChild(el('div',{class:'g-item'},[el('strong',{},[txt(g[0]+':')]), el('span',{},[txt(' '+g[1])])]));
+  });
+  guideCard.appendChild(guideRow);
+  right.appendChild(guideCard);
+
+  var refCard = el('div',{class:'card', style:'margin-top:14px;'});
+  refCard.appendChild(el('h4',{},[txt('참고: 실측 사례 라이브러리')]));
+  refCard.appendChild(el('p',{},[txt('과거 실제 겹침 사례와 결과 판정 (§경쟁사 순위 추이 탭에서 상세 확인)')]));
+  var refList = el('div',{style:'margin-top:10px;display:flex;flex-direction:column;gap:6px;font-size:12px;'});
+  [
+    ['12/16~18','메이플 칼리출시 vs 마비노기 산리오콜라보','동반 개선','good'],
+    ['6/19','메이플 오디움업데이트 vs 마비노기 시즌2예고','상극','warning'],
+    ['7/16~31','메이플 RE:BOOST vs 마비노기 카브락레이드','상극','warning']
+  ].forEach(function(r){
+    refList.appendChild(el('div',{style:'display:flex;justify-content:space-between;gap:8px;'},[
+      el('span',{},[el('span',{class:'mono', style:'color:var(--ink-3);margin-right:8px;'},[txt(r[0])]),txt(r[1])]),
+      el('span',{},[el('span',{class:'dot '+r[3], style:'margin-right:5px;'},[]),txt(r[2])])
+    ]));
+  });
+  refCard.appendChild(refList);
+  right.appendChild(refCard);
+
+  grid.appendChild(right);
+  wrap.appendChild(grid);
+
+  setTimeout(function(){
+    renderCalList();
+    calcBtn.addEventListener('click', computePressure);
+    document.getElementById('resetCal').addEventListener('click', function(){ simState.cal = DEFAULT_CAL.slice(); saveCal(simState.cal); renderCalList(); });
+    document.getElementById('addCalBtn').addEventListener('click', function(){
+      var g = addGame.value, t = addTitle.value.trim(), s = addStart.value, en = addEnd.value, sc = addScale.value;
+      if (!t || !s) return;
+      simState.cal.push({game:g, start:s, end: en||s, title:t, scale:sc});
+      saveCal(simState.cal);
+      addTitle.value=''; addStart.value=''; addEnd.value='';
+      renderCalList();
+    });
+  }, 0);
+
+  return wrap;
+}
+
+function renderCalList(){
+  var list = document.getElementById('calList');
+  if (!list) return;
+  list.innerHTML = '';
+  simState.cal.forEach(function(c, i){
+    var item = el('li',{class:'cal-item'});
+    item.appendChild(el('span',{class:'mono'},[txt(c.start.slice(5)+(c.end!==c.start?'~'+c.end.slice(5):''))]));
+    item.appendChild(el('span',{},[txt(c.game)]));
+    item.appendChild(el('span',{},[txt(c.title)]));
+    var scaleCls = c.scale==='big'?'big':c.scale==='mid'?'mid':'small';
+    var scaleLabel = c.scale==='big'?'대형':c.scale==='mid'?'중형':'소형';
+    var right = el('span',{style:'display:flex;align-items:center;gap:6px;'},[
+      el('span',{class:'scale '+scaleCls},[txt(scaleLabel)]),
+      el('button',{class:'rm'},[txt('×')])
+    ]);
+    right.querySelector('button').addEventListener('click', function(){ simState.cal.splice(i,1); saveCal(simState.cal); renderCalList(); });
+    item.appendChild(right);
+    list.appendChild(item);
+  });
+}
+
+function computePressure(){
+  var s = document.getElementById('simStart').value;
+  var en = document.getElementById('simEnd').value || s;
+  var titleEl = document.getElementById('simTitle');
+  var result = document.getElementById('pressureResult');
+  var overlapList = document.getElementById('overlapList');
+  overlapList.innerHTML = '';
+  if (!s) { result.className='pressure-result low'; result.innerHTML = '<div class="grade">—</div><div class="desc">시작일을 입력해주세요</div>'; return; }
+  var sd = new Date(s), ed = new Date(en);
+  var overlaps = simState.cal.filter(function(c){
+    var cs = new Date(c.start), ce = new Date(c.end);
+    return cs <= ed && ce >= sd;
+  });
+  var hasBig = overlaps.some(function(c){ return c.scale === 'big'; });
+  var n = overlaps.length;
+  var grade = n===0 ? 'low' : (n===1 ? 'mid' : 'high');
+  if (grade==='mid' && hasBig) grade = 'high';
+  var gradeLabel = {low:'LOW', mid:'MID', high:'HIGH'}[grade];
+  var descMap = {
+    low: '겹치는 경쟁사 이벤트가 없습니다 — 예정대로 진행하세요.',
+    mid: '경쟁사 1곳과 겹칩니다 — 화제성 모니터링을 강화하세요.',
+    high: '경쟁사 '+n+'곳과 겹치며' + (hasBig?' 대형 이벤트가 포함되어 있습니다' : '') + ' — 날짜 조정 또는 카드 강도 보강을 검토하세요.'
+  };
+  result.className = 'pressure-result ' + grade;
+  result.innerHTML = '<div class="grade">'+gradeLabel+'</div><div class="desc">'+descMap[grade]+'</div>';
+  if (overlaps.length === 0) {
+    overlapList.appendChild(el('li',{},[el('span',{},[txt('겹치는 이벤트 없음')])]));
+  } else {
+    overlaps.forEach(function(o){
+      overlapList.appendChild(el('li',{},[
+        el('span',{},[txt(o.game+' · '+o.title)]),
+        el('span',{class:'mono'},[txt(o.start.slice(5)+(o.end!==o.start?'~'+o.end.slice(5):'')+' · '+(o.scale==='big'?'대형':o.scale==='mid'?'중형':'소형'))])
+      ]));
+    });
+  }
+}
+
+/* =================== TAB: STRAT =================== */
+function panelSTRAT() {
+  var wrap = el('div');
+
+  var b0 = el('section',{class:'blk'});
+  b0.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('난이도 × 효과 우선순위 매트릭스')])]));
+  var pm = el('div',{class:'pmatrix'});
+  pm.appendChild(el('div',{class:'quad-line-v'})); pm.appendChild(el('div',{class:'quad-line-h'}));
+  pm.appendChild(el('div',{class:'axis-x'},[txt('난이도(실행 용이 → 어려움)  →')]));
+  pm.appendChild(el('div',{class:'axis-y'},[txt('효과(낮음 → 높음)  →')]));
+  var positions = { low:{x:22}, mid:{x:50}, high:{x:80} };
+  var yPos = { high:22, mid:50, low:80 };
+  STRATEGIES.forEach(function(s){
+    var node = el('div',{class:'pnode', style:'left:'+positions[s.effort].x+'%; top:'+yPos[s.impact]+'%;'});
+    node.appendChild(el('div',{class:'pdot'}));
+    node.appendChild(el('div',{class:'plabel'},[txt(s.id+' '+s.title)]));
+    pm.appendChild(node);
+  });
+  b0.appendChild(pm);
+  wrap.appendChild(b0);
+
+  var b1 = el('section',{class:'blk'});
+  b1.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('4대 실행전략')])]));
+  var sgrid = el('div',{class:'grid grid-2'});
+  STRATEGIES.forEach(function(s){
+    var card = el('div',{class:'card'});
+    card.appendChild(el('div',{class:'case-tag'},[txt(s.id+' · '+s.horizon)]));
+    card.appendChild(el('h4',{style:'margin-top:5px;'},[txt(s.title)]));
+    card.appendChild(el('p',{},[txt(s.rationale)]));
+    var stepsH = el('div',{style:'margin-top:12px;font-size:12px;font-weight:700;color:var(--ink);'},[txt('실행 단계')]);
+    card.appendChild(stepsH);
+    var ol = el('ol',{style:'margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-2);'});
+    s.steps.forEach(function(st){ ol.appendChild(el('li',{style:'margin-bottom:4px;'},[txt(st)])); });
+    card.appendChild(ol);
+    var risksH = el('div',{style:'margin-top:10px;font-size:12px;font-weight:700;color:var(--critical);'},[txt('리스크')]);
+    card.appendChild(risksH);
+    var ul = el('ul',{style:'margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-2);'});
+    s.risks.forEach(function(r){ ul.appendChild(el('li',{style:'margin-bottom:4px;'},[txt(r)])); });
+    card.appendChild(ul);
+    var kpisH = el('div',{style:'margin-top:10px;font-size:12px;font-weight:700;color:var(--good);'},[txt('성공지표(제안)')]);
+    card.appendChild(kpisH);
+    var kul = el('ul',{style:'margin:6px 0 0;padding-left:18px;font-size:12.5px;color:var(--ink-2);'});
+    s.kpis.forEach(function(k){ kul.appendChild(el('li',{style:'margin-bottom:4px;'},[txt(k)])); });
+    card.appendChild(kul);
+    sgrid.appendChild(card);
+  });
+  b1.appendChild(sgrid);
+  wrap.appendChild(b1);
+
+  var b2 = el('section',{class:'blk'});
+  b2.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('실행 로드맵')])]));
+  var rm = el('div',{class:'roadmap'});
+  ROADMAP.forEach(function(r){
+    rm.appendChild(el('div',{class:'rm-row'},[
+      el('div',{class:'rm-phase'},[txt(r.phase),el('span',{class:'wk'},[txt(r.wk)])]),
+      el('div',{class:'rm-body'},[el('strong',{},[txt(r.items)]), el('div',{style:'margin-top:4px;'},[txt('성공지표: '+r.kpi)])])
+    ]));
+  });
+  b2.appendChild(rm);
+  wrap.appendChild(b2);
+
+  var b3 = el('section',{class:'blk'});
+  b3.appendChild(el('div',{class:'blk-head'},[el('h3',{},[txt('리스크 로그')])]));
+  var rl = el('div',{class:'risk-log'});
+  RISKS.forEach(function(r){
+    rl.appendChild(el('div',{class:'risk-item'},[
+      el('span',{class:'sev '+(r.sev==='h'?'sev-h':'sev-m')},[txt(r.sev==='h'?'HIGH':'MID')]),
+      el('div',{},[el('strong',{},[txt(r.title)]), el('p',{},[txt(r.note)])])
+    ]));
+  });
+  b3.appendChild(rl);
+  wrap.appendChild(b3);
+
+  return wrap;
+}
+
+/* =================== TAB SWITCHING =================== */
+var PANELS = { exe: panelEXE, rank: panelRANK, retn: panelRETN, sim: panelSIM, strat: panelSTRAT };
+var panelsEl = document.getElementById('panels');
+var rendered = {};
+function showTab(name){
+  document.querySelectorAll('.tab-btn').forEach(function(b){
+    var active = b.getAttribute('data-tab') === name;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active ? 'true':'false');
+  });
+  panelsEl.innerHTML = '';
+  var content = PANELS[name]();
+  panelsEl.appendChild(content);
+}
+document.getElementById('tabs').addEventListener('click', function(e){
+  var btn = e.target.closest('.tab-btn');
+  if (!btn) return;
+  showTab(btn.getAttribute('data-tab'));
+});
+showTab('exe');
+</script>
+
+<style>
+  /* chart color utility classes (need var() via class, not attribute, for theme switching) */
+  .ln-self { stroke: var(--self); }
+  .ln-bdo { stroke: var(--comp-bdo); }
+  .ln-ion2 { stroke: var(--comp-ion2); }
+  .ln-mabi { stroke: var(--comp-mabi); }
+  .dot-fill-self { fill: var(--self); }
+  .dot-fill-bdo { fill: var(--comp-bdo); }
+  .dot-fill-ion2 { fill: var(--comp-ion2); }
+  .dot-fill-mabi { fill: var(--comp-mabi); }
+  .txt-self { fill: var(--self); } .txt-bdo { fill: var(--comp-bdo); } .txt-ion2 { fill: var(--comp-ion2); } .txt-mabi { fill: var(--comp-mabi); }
+  .evt-good { fill: var(--good); } .evt-warning { fill: var(--warning); } .evt-critical { fill: var(--critical); } .evt-neutral { fill: var(--neutral); }
+  .sw.dot-fill-self { background: var(--self); } .sw.dot-fill-bdo { background: var(--comp-bdo); } .sw.dot-fill-ion2 { background: var(--comp-ion2); } .sw.dot-fill-mabi { background: var(--comp-mabi); }
+  .bar-fill.dot-fill-self { background: var(--self); } .bar-fill.dot-fill-bdo { background: var(--comp-bdo); } .bar-fill.dot-fill-ion2 { background: var(--comp-ion2); } .bar-fill.dot-fill-mabi { background: var(--comp-mabi); }
+</style>
